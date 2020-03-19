@@ -10,6 +10,10 @@ public class Players {
 
 	private static LinkedList<Player> players= new LinkedList<Player>(); 
 	
+	
+	
+	
+	
 	/**
 	 * adds a player to the static list
 	 * @param player

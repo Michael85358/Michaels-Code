@@ -1,5 +1,6 @@
 package fop.model.gameplay;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,6 +20,9 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 
 	private GameController gc;
 
+	
+	public boolean mission1=true;
+	
 	public GamePlay(GameController gc) {
 
 		this.gc = gc;
@@ -54,17 +58,64 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 		gc.getTileStack().rotateTopTile();
 	}
 
+	
+	public Player mission1() {
+		
+		ArrayList<Player> pl = new ArrayList<Player>();
+		pl.addAll(gc.getPlayers());
+		
+		Player Burgherr=null;
+		for(Player p: pl) {
+			if(p.getCastle()>=3) {
+				boolean t = true;
+			
+				int max=p.getCastle();
+				ArrayList<Player> pl2 = new ArrayList<Player>();
+				pl2.addAll(gc.getPlayers());
+				pl2.remove(p);
+				for(Player b: pl2) 
+					if(max-b.getCastle() <3)
+						t = false;
+				if(t) Burgherr = p;
+		}
+		}
+		return Burgherr;
+	}
+	
+	
+	
+	
 	@Override
 	public void nextRound() {
+		//System.out.println(this.getGameController().getTileStack().cardstack.size());
+		if(mission1==false)
+				gc.getGameView().getToolbarPanel().showMission1Button(false); 
+		
+		ArrayList<Player> pl = new ArrayList<Player>();
+		pl.addAll(gc.getPlayers());
+		
 		if(!currentPlayer().getName().equals("AI"))
 			gc.getGameBoardPanel().removeTempMeepleOverlay();
+		
+	
+		
+		
 		if (gc.getTileStack().remainingTiles() == 0)
 			gc.setState(State.GAME_OVER);
 		else {
 			gc.getGameBoard().calculatePoints(gc.getState());
+			
 			gc.getGameBoard().push(gc.getGameBoard());
+			
+			
+			
+			
+			if((mission1() != null)&&(mission1==true)) 
+				gc.setState(State.GAME_OVER);
+					
 			gc.incrementRound();
 			gc.setState(State.PLACING_TILE);
+			
 		}
 	}
 
@@ -91,6 +142,15 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 			case "Skip":
 				nextRound();
 				break;
+			case "3 Burgen Vorsprung gewinnt":
+				if(gc.getGameBoard().getTiles().size()==1)
+					gc.getGameView().getToolbarPanel().activateMission1Button();
+				if(mission1==true)
+					mission1=false;
+				else
+					mission1=true;
+				
+				
 			}
 		});
 	}
@@ -119,25 +179,27 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 
 	@Override
 	public void placing_Tile_Mode() {
-		if(currentPlayer().getName().equals("AI")) {
-			Tile tile = gc.getTileStack().pickUpTile();
-			currentPlayer().draw(this, tile);
-			gc.getTileStack().push(gc.getTileStack());
-			gc.setState(State.PLACING_MEEPLE);
-			return;
-		}
-		push(gc.getPlayers()); // push players to observers (= ToolbarPanel)
+		
+			push(gc.getPlayers()); // push players to observers (= ToolbarPanel)
 
-		// According to the rules, a tile that does not fit anywhere is not mixed into
-		// the stack again, but simply discarded.
-		if (!gc.getGameBoard().isTileAllowedAnywhere(gc.getTileStack().peekTile())) {
-			gc.getTileStack().discardTopTile();
-		}
+			// According to the rules, a tile that does not fit anywhere is not mixed into
+			// the stack again, but simply discarded.
+			if (!gc.getGameBoard().isTileAllowedAnywhere(gc.getTileStack().peekTile())) {
+				gc.getTileStack().discardTopTile();
+			}
 
-		gc.getTileStack().push(gc.getTileStack()); // pushes tile stack to observers (= TileStackPanel)
-		gc.getGameView().getToolbarPanel().showSkipButton(false);
-		gc.getGameView().setStatusbarPanel(
-				MessagesConstants.playerPlacingTile(currentPlayer().getName()), currentPlayer().getColor().getMeepleColor());
+			gc.getTileStack().push(gc.getTileStack()); // pushes tile stack to observers (= TileStackPanel)
+			if(currentPlayer().getName().equals("AI")) {
+				Tile tile = gc.getTileStack().pickUpTile();
+				currentPlayer().draw(this, tile);
+				//gc.getTileStack().push(gc.getTileStack());
+				gc.setState(State.PLACING_MEEPLE);
+				return;
+			}
+			gc.getGameView().getToolbarPanel().showSkipButton(false);
+			gc.getGameView().setStatusbarPanel(
+			MessagesConstants.playerPlacingTile(currentPlayer().getName()), currentPlayer().getColor().getMeepleColor());
+			
 	}
 
 	@Override
@@ -181,9 +243,22 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 	
 	@Override
 	public	List<Player> getWinners(List<Player>players) {
+		
+		
+		
+		
+		
+		
+		
 		List<Player> winners = new LinkedList<Player>();
 		int highestScore = 0;
+		
+		
+		
+		
 		for (Player p : players)
+			
+			
 			if (p.getScore() > highestScore) {
 				winners = new LinkedList<Player>();
 				winners.add(p);
@@ -191,6 +266,13 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 			} else if (p.getScore() == highestScore) {
 				winners.add(p);
 			}
+	
+		if(mission1() != null) {
+			winners = new LinkedList<Player>();
+			winners.add(mission1());
+		}
+		
+		
 		return winners;
 	}
 

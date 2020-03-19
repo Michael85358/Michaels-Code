@@ -107,6 +107,7 @@ public class Tile {
 			if ( node == getNode(BOTTOMRIGHT)) return Position.BOTTOMRIGHT;
 			if ( node == getNode(TOPLEFT)) return Position.TOPLEFT;
 			if ( node == getNode(TOPRIGHT)) return Position.TOPRIGHT;
+			if ( node == getNode(CENTER)) return Position.CENTER;
 			else return null;
 				
 		

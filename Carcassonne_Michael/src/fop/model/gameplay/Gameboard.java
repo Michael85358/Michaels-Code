@@ -37,7 +37,8 @@ public class Gameboard extends Observable<Gameboard> {
 	private List<Tile> tiles;
 	private FeatureGraph graph;
 	private Tile newestTile;
-
+	
+	
 	public Gameboard() {
 		board = new Tile[144][144];
 		tiles = new LinkedList<Tile>();
@@ -49,6 +50,22 @@ public class Gameboard extends Observable<Gameboard> {
 		newTile(t, 72, 72);
 	}
 
+	public void newGameBoard(Tile[][] b) {
+		this.board = b;
+	
+	}
+
+	
+	public void newGraph(FeatureGraph g) {
+		this.graph = g;
+	
+	}
+	
+	public void newTiles(List<Tile> l) {
+		this.tiles = l;
+	
+	}
+	
 	public void newTile(Tile t, int x, int y) {
 		t.x = x;
 		t.y = y;
@@ -155,6 +172,106 @@ public class Gameboard extends Observable<Gameboard> {
 	
 	
 	
+	private FeatureGraph connectNodesforAI(Tile t, int x, int y) {
+		
+		FeatureGraph graphAI = new FeatureGraph();
+		graphAI.addAllNodes(board[x][y].getNodes());
+		graphAI.addAllEdges(board[x][y].getEdges());
+
+		
+
+		// Check top tile
+		Tile Toptile = null;
+		for ( int i = 0; i<tiles.size(); i++) {
+			if ((tiles.get(i).x == x) && (tiles.get(i).y == y-1)) {
+				Toptile = tiles.get(i);
+		
+			}
+		}
+			
+		if ( Toptile != null ) {
+			graph.addEdge(Toptile.getNode(BOTTOM), board[x][y].getNode(TOP));
+			if(t.getNode(TOP).getValue().equals(ROAD)) {
+				graphAI.addEdge(Toptile.getNode(BOTTOMLEFT), t.getNode(TOPLEFT));
+				graphAI.addEdge(Toptile.getNode(BOTTOMRIGHT), t.getNode(TOPRIGHT));
+			}
+		}
+			
+				
+		
+			// This might be helpful:
+			// As we already ensured that the tile on top exists and fits the tile at x, y,
+			// we know that if the feature of its top is a ROAD, the feature at the bottom
+			// of the tile on top is a ROAD aswell. As every ROAD has FIELD nodes as
+			// neighbours on both sides, we can connect those nodes of the two tiles. The
+			// same logic applies to the next three routines.
+
+
+		// Check left tile
+		Tile Lefttile = null;
+		for ( int i = 0; i<tiles.size(); i++) {
+			if ((tiles.get(i).x == x-1) && (tiles.get(i).y == y)) {
+				Lefttile = tiles.get(i);
+		
+			}
+		}
+			
+		if ( Lefttile != null ) {
+			graphAI.addEdge(Lefttile.getNode(RIGHT), t.getNode(LEFT));
+			if(t.getNode(LEFT).getValue().equals(ROAD)) {
+				graphAI.addEdge(Lefttile.getNode(BOTTOMRIGHT), t.getNode(BOTTOMLEFT));
+				graphAI.addEdge(Lefttile.getNode(TOPRIGHT), t.getNode(TOPLEFT));
+			}
+		}
+
+		// Check right tile
+		Tile Righttile = null;
+		for ( int i = 0; i<tiles.size(); i++) {
+			if ((tiles.get(i).x == x+1) && (tiles.get(i).y == y)) {
+				Righttile = tiles.get(i);
+		
+			}
+		}
+			
+		if ( Righttile != null ) {
+			graphAI.addEdge(Righttile.getNode(LEFT), t.getNode(RIGHT));
+			if(t.getNode(RIGHT).getValue().equals(ROAD)) {
+				graphAI.addEdge(Righttile.getNode(BOTTOMLEFT), t.getNode(BOTTOMRIGHT));
+				graphAI.addEdge(Righttile.getNode(TOPLEFT), t.getNode(TOPRIGHT));
+			}
+		}
+
+		// Check bottom tile
+		Tile Bottomtile = null;
+		for ( int i = 0; i<tiles.size(); i++) {
+			if ((tiles.get(i).x == x) && (tiles.get(i).y == y+1)) {
+				Bottomtile = tiles.get(i);
+			
+			}
+		}
+				
+		if ( Bottomtile != null ) {
+			graphAI.addEdge(Bottomtile.getNode(TOP), t.getNode(BOTTOM));
+			if(t.getNode(BOTTOM).getValue().equals(ROAD)) {
+				graphAI.addEdge(Bottomtile.getNode(TOPRIGHT), t.getNode(BOTTOMRIGHT));
+				graphAI.addEdge(Bottomtile.getNode(TOPLEFT), t.getNode(BOTTOMLEFT));
+			}
+		}
+		
+		return graphAI;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 
@@ -169,6 +286,14 @@ public class Gameboard extends Observable<Gameboard> {
 	 */
 	public boolean isTileAllowed(Tile t, int x, int y) {
 		int top = 0, left = 0, right = 0, down = 0;
+		
+		if(board[x][y]!=null) return false;
+		
+		
+		
+		
+		
+		
 		// Check top tile
 		Tile Toptile = null;
 		for ( int i = 0; i<tiles.size(); i++) {
@@ -218,7 +343,8 @@ public class Gameboard extends Observable<Gameboard> {
 		}
 		if ( Righttile != null ) {
 			
-				if(Righttile.getNodeAtPosition(Position.LEFT).getValue().equals( t.getNodeAtPosition(Position.RIGHT).getValue() ) ){
+				if(Righttile.getNodeAtPosition(Position.LEFT).getValue()
+						.equals( t.getNodeAtPosition(Position.RIGHT).getValue() ) ){
 					right =1;
 					
 				}
@@ -246,7 +372,7 @@ public class Gameboard extends Observable<Gameboard> {
 		}		
 		else down=1;
 			
-
+		
 		
 		
 		if (down+right+left+top ==4) return true;
@@ -384,6 +510,101 @@ public class Gameboard extends Observable<Gameboard> {
 				
 		//After adding the points to the overall points of the player, set the score to 1 again
 	}
+	
+	
+public int calculateMonasteriesForAI(Tile t) {
+		List<Tile> tilesAI = new ArrayList<Tile>();
+		tilesAI.addAll(tiles);
+		tilesAI.add(t);
+		int res =0;
+		int score =0;
+		int x,y;
+		for ( int i = 0; i<tiles.size(); i++) {
+			
+			if( (tiles.get(i).getType()==TileType.A)|| (tiles.get(i).getType()==TileType.B)) {
+					
+					
+				if(tiles.get(i).getNodeAtPosition(Position.CENTER).hasMeeple() == true) {
+					
+				
+					score=1; x=tiles.get(i).x; y=tiles.get(i).y;
+					
+					if(x>0 && y>0) {
+						if(board[x-1][y-1]!=null){
+							score = score +1;
+						}
+					}
+					
+					if(y>0) {
+						if(board[x][y-1]!=null){
+							score = score +1;
+						}
+					}
+					
+					if(x<144 && y>0) {
+						if(board[x+1][y-1]!=null){
+							score = score +1;
+						}
+					}
+					
+					if(x<144) {
+						if(board[x+1][y]!=null){
+							score = score +1;
+						}
+					}
+					
+					if(x<144 && y<144) {
+						if(board[x+1][y+1]!=null){
+							score = score +1;
+						}
+					}
+					
+					if(y<144) {
+						if(board[x][y+1]!=null){
+							score = score +1;
+						}
+					}
+					
+					if(x>0 && y<144) {
+						if(board[x-1][y+1]!=null){
+							score = score +1;
+						}
+					}
+					
+					if(x>0) {
+						if(board[x-1][y]!=null){
+							score = score +1;
+						}
+					}
+					
+					if(score==9) 
+						
+							if(tiles.get(i).getMeeple().getName().equals("AI"))
+								res = res + score;
+							else res = res-score;
+								
+						
+						
+					}
+					
+						
+				}
+			}
+		
+				
+		score =0;
+							
+		return res;
+		
+		//the methods getNode() and getType of class Tile and FeatureNode might be helpful
+		
+		//Check all surrounding tiles and add the points
+				
+		//Points are given if the landscape is complete or the game is over
+		//Meeples are just returned in case of state == State.GAME_OVER
+				
+		//After adding the points to the overall points of the player, set the score to 1 again
+	}
 
 	/**
 	 * Calculates points and adds them to the players score, if a feature was
@@ -409,6 +630,11 @@ public class Gameboard extends Observable<Gameboard> {
 	 * @param type  The FeatureType that is supposed to be calculated.
 	 * @param state The current game state.
 	 */
+	
+	
+	
+	
+	
 	
 	
 	
@@ -445,9 +671,7 @@ public class Gameboard extends Observable<Gameboard> {
 		
 	}
 		
-			
-			
-	
+
 	
 	
 	public boolean isCompleted(ArrayDeque<Node<FeatureType>> queue) {
@@ -461,6 +685,7 @@ public class Gameboard extends Observable<Gameboard> {
 			FeatureNode node = (FeatureNode) nodes.remove(0);
 		
 			Tile tile = getTileContainingNode(node);
+			
 			Position po = tile.getNodePosition(node);
 	
 		
@@ -562,12 +787,12 @@ public class Gameboard extends Observable<Gameboard> {
 					
 		if(type==ROAD) {
 				if(completed == true) {
-						setPointsOfPlayerX(newque, score);
+						setPointsOfPlayerX(newque, score, type);
 								
 				}
 							
 				if((completed == false)&&(state == State.GAME_OVER)) {
-						setPointsOfPlayerX(newque, score);
+						setPointsOfPlayerX(newque, score, type);
 				}
 								
 		}
@@ -575,6 +800,8 @@ public class Gameboard extends Observable<Gameboard> {
 		if(type == CASTLE) {
 				ArrayDeque<Node<FeatureType>> castle = new ArrayDeque<Node<FeatureType>>();
 				castle.addAll(newque);
+				
+				
 				ArrayList<Tile> tiles = new ArrayList<Tile>();
 				
 				while(!castle.isEmpty()) {
@@ -590,18 +817,18 @@ public class Gameboard extends Observable<Gameboard> {
 			
 				if(completed == true) {
 					score=score*2;
-					setPointsOfPlayerX(newque, score);
+					setPointsOfPlayerX(newque, score, type);
 				}
-						
+				else {		
 				if((completed == false)&&(state == State.GAME_OVER)) {
-					setPointsOfPlayerX(newque, score);
-				}
+					setPointsOfPlayerX(newque, score, type);
+				}}
 						
 		}
 		if(type ==FeatureType.FIELDS) {
-			score = fieldsScore(newque);setPointsOfPlayerX(newque, score);
+			score = fieldsScore(newque);
 			if(state == State.GAME_OVER) {
-					setPointsOfPlayerX(newque, score);
+					setPointsOfPlayerX(newque, score, type);
 			}
 			score=0;
 							
@@ -632,7 +859,7 @@ public class Gameboard extends Observable<Gameboard> {
 	public int fieldsScore(ArrayDeque<Node<FeatureType>> que){
 		
 		int score=0;
-		System.out.println("anzahl:     " + que);
+		
 		ArrayList<Node<FeatureType>> fields = new ArrayList<Node<FeatureType>>();
 		
 		fields.addAll(que);
@@ -699,7 +926,7 @@ public class Gameboard extends Observable<Gameboard> {
 			if(isCompleted(newque)) score = score +3;
 			newque = new ArrayDeque<Node<FeatureType>>();
 		}
-			System.out.println("f:    " + score);
+			
 		return score;	
 		
 	}
@@ -708,9 +935,11 @@ public class Gameboard extends Observable<Gameboard> {
 	
 	
 	
-	public void setPointsOfPlayerX(ArrayDeque<Node<FeatureType>> queue, int score) {
+	public void setPointsOfPlayerX(ArrayDeque<Node<FeatureType>> queue, int score, FeatureType type) {
 		ArrayList<Player> Players = new ArrayList<Player>();
 		ArrayList<Player> Winners = new ArrayList<Player>();
+		
+		
 		while(queue.size()>0) {
 			FeatureNode fnode = (FeatureNode) queue.getFirst();
 			if(fnode.hasMeeple()) { 
@@ -746,8 +975,24 @@ public class Gameboard extends Observable<Gameboard> {
 		
 		for(int h=0; h<Winners.size(); h++)	{
 			Winners.get(h).addScore(score); 
+			if(type == CASTLE) {
+				
+				Winners.get(h).addCastle(1);
+				
+			}
+				
+			
+			
+			
 		}
+		
 	}
+	
+	
+	
+	
+	
+	
 	
 	
 	public int anzahl(ArrayList<Player> lst, Player player) {
@@ -758,6 +1003,10 @@ public class Gameboard extends Observable<Gameboard> {
 			
 			return anPlayer;
 	}
+	
+	
+	
+	
 	
 	
 	
@@ -818,7 +1067,7 @@ public class Gameboard extends Observable<Gameboard> {
 	 * @return True if the given FeatureNode has any meeple on its subgraph, false
 	 *         if not.
 	 */
-	private boolean hasMeepleOnSubGraph(FeatureNode n) {
+	public boolean hasMeepleOnSubGraph(FeatureNode n) {
 		List<Node<FeatureType>> visitedNodes = new ArrayList<>();
 		ArrayDeque<Node<FeatureType>> queue = new ArrayDeque<>();
 
@@ -872,4 +1121,5 @@ public class Gameboard extends Observable<Gameboard> {
 	public void setFeatureGraph(FeatureGraph graph) {
 		this.graph = graph; 
 	}
+
 }

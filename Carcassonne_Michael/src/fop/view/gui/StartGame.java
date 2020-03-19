@@ -100,10 +100,28 @@ public class StartGame extends View implements GameConstants{
 		playerConfig = new JComponent[GameConstants.MAX_PLAYERS][];
 		
 		for (int i = 0; i < GameConstants.MAX_PLAYERS; i++) {
+			
+			
+			if(i==1) {
+				playerConfig[i] = new JComponent[] { createLabel(String.format("%d.", i + 1), 16),
+						new ColorChooserComboBox().getComboBox(),
+						new JTextField(String.format("AI", i + 1)) };
+				
+			}
+			else {
+			
+			
 			playerConfig[i] = new JComponent[] { createLabel(String.format("%d.", i + 1), 16),
 					new ColorChooserComboBox().getComboBox(),
 					new JTextField(String.format("Player %d", i + 1)) };
-
+			
+			}
+		
+			
+		
+			
+			
+			
 			playerConfig[i][1].setSize(50, 25);
 		
 			playerConfig[i][2].setSize(200, 25);

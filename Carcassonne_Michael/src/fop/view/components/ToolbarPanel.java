@@ -1,5 +1,6 @@
 package fop.view.components;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
@@ -19,7 +20,9 @@ import fop.model.player.Player;
  *
  */
 public class ToolbarPanel extends JPanel implements Observer<List<Player>> {
-
+	JButton mission1Button;
+	
+	
 	JButton menuButton;
 	JButton skipButton;
 	JLabel[] playerLabels;
@@ -42,7 +45,13 @@ public class ToolbarPanel extends JPanel implements Observer<List<Player>> {
 			playerLabels[i].setPreferredSize(new Dimension(80, 54));
 			add(playerLabels[i]);
 		}
-
+		
+		mission1Button = new JButton("3 Burgen Vorsprung gewinnt");
+		mission1Button.setForeground(Color.RED);
+		
+		mission1Button.setBackground(Color.RED);
+		add(mission1Button);
+		
 		menuButton = new JButton("Main menu");
 		add(menuButton);
 
@@ -58,6 +67,7 @@ public class ToolbarPanel extends JPanel implements Observer<List<Player>> {
 	public void addToolbarActionListener(ActionListener l) {
 		menuButton.addActionListener(l);
 		skipButton.addActionListener(l);
+		mission1Button.addActionListener(l);
 	}
 
 	/**
@@ -68,16 +78,46 @@ public class ToolbarPanel extends JPanel implements Observer<List<Player>> {
 	public void showSkipButton(boolean visible) {
 		skipButton.setVisible(visible);
 	}
+	
+	/**
+	 * if true => display will show up if false => display will hide
+	 * 
+	 * @param visible
+	 */
+	public void showMission1Button(boolean visible) {
+		mission1Button.setVisible(visible);
+	}
+	
+	public void activateMission1Button() {
+		if(mission1Button.getBackground()!=Color.RED) {
+			mission1Button.setBackground(Color.RED);
+			mission1Button.setForeground(Color.RED);
+		}
+		else {
+			mission1Button.setBackground(Color.GRAY);
+			mission1Button.setForeground(Color.BLACK);
+		}
+	}
 
 	/**
-	 * Updates the current score and meeple count for each player.
+	 * Updates the current score, Castles and meeple count for each player.
 	 * 
 	 * @param players (an array of the players)
 	 */
 	private void updatePlayers(List<Player> players) {
 		for (int i = 0; i < players.size(); i++) {
+			if(mission1Button.getBackground()!=Color.RED) {
+			
+				playerLabels[i].setText("<html>Score:  " + players.get(i).getScore() + "<br>Meeples: "
+						+ players.get(i).getMeepleAmount() );
+			}
+			
+			else {
 			playerLabels[i].setText("<html>Score:  " + players.get(i).getScore() + "<br>Meeples: "
-					+ players.get(i).getMeepleAmount() + "</html>");
+					+ players.get(i).getMeepleAmount() +
+					
+					"<br>Castles:  " + players.get(i).getCastle() +"</html>" +"<br> ");
+			}
 		}
 	}
 

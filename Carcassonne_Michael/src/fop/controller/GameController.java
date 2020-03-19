@@ -187,5 +187,8 @@ public class GameController implements GameControllerMethods {
 	public void setTileStackPanel(TileStackPanel tileStackPanel) {
 		this.stackPanel = tileStackPanel;
 	}
+	
+	
+	
 
 }

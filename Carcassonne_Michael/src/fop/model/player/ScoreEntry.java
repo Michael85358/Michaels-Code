@@ -49,7 +49,8 @@ public class ScoreEntry implements Comparable<ScoreEntry> {
 	 * @param printWriter
 	 */
 	public void write(PrintWriter printWriter) {
-		// TODO
+		String line = name + ";" + date.getTime() + ";" + score;
+		printWriter.println(line);
 	}
 
 	/**
@@ -59,8 +60,33 @@ public class ScoreEntry implements Comparable<ScoreEntry> {
 	 * @return
 	 */
 	public static ScoreEntry read(String line) {
-		// TODO
-		return null;
+		String regex = "(((\\w)| )+);(\\d+);(\\d+)";
+		// Check the format
+		if (!line.matches(regex)) {
+			return null;
+		}
+		// Seperate the String
+		int firstSemicolon = line.indexOf(';');
+		int secondSemicolon = line.lastIndexOf(';');
+		String name = line.substring(0, firstSemicolon);
+		long date = Long.parseLong(line.substring(firstSemicolon + 1, secondSemicolon));
+		int score = Integer.parseInt(line.substring(secondSemicolon + 1));
+		// Check if numbers are valid
+		if (date < 0 || score < 0) {
+			return null;
+		}
+		// Constructs a ScoreEntry
+		return new ScoreEntry(name, score, new Date(date));
+	}
+
+	/**
+	 * Converts the ScoreEntry to a String in right format
+	 * 
+	 * @author <u>team 129</u>
+	 */
+	@Override
+	public String toString() {
+		return name + ";" + date.getTime() + ";" + score;
 	}
 
 	/**

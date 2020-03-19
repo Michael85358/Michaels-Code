@@ -45,5 +45,17 @@ public interface PlayerMethods {
 	 * Adds one meeple to this players amount of meeple.
 	 */
 	public void returnMeeple();
+
+	
+
+	public int getCastle();
+	
+	
+
+	public void addCastle(int c);
+	
+	
+		
+	
 	
 }

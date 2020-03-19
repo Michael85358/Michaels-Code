@@ -6,6 +6,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -13,7 +14,9 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
@@ -103,16 +106,22 @@ public class Resources implements GameConstants {
 	 *                     Schreiben auftreten.
 	 */
 	private void saveScoreEntries() throws IOException {
-		// TODO
+		BufferedWriter bw = new BufferedWriter(new FileWriter(HIGHSCORE_FILE));
+		// Writes every ScoreEntry to the file
+		for (ScoreEntry scoreEntry : scoreEntries) {
+			bw.write(scoreEntry.toString());
+			bw.newLine();
+		}
+		bw.close();
 	}
 
 	/**
-	 * Lädt den Highscore-Table aus der Datei "highscores.txt". Dabei wird die
-	 * Liste {@link #scoreEntries} neu erzeugt und befüllt. Beachte dabei, dass die
-	 * Liste nach dem Einlen absteigend nach den Punktzahlen sortiert sein muss.
-	 * Sollte eine Exception auftreten, kann diese ausgegeben werden, sie sollte
-	 * aber nicht weitergegeben werden, da sonst das Laden der restlichen Resourcen
-	 * abgebrochen wird ({@link #load()}).
+	 * Lädt den Highscore-Table aus der Datei "highscores.txt". Dabei wird die Liste
+	 * {@link #scoreEntries} neu erzeugt und befüllt. Beachte dabei, dass die Liste
+	 * nach dem Einlen absteigend nach den Punktzahlen sortiert sein muss. Sollte
+	 * eine Exception auftreten, kann diese ausgegeben werden, sie sollte aber nicht
+	 * weitergegeben werden, da sonst das Laden der restlichen Resourcen abgebrochen
+	 * wird ({@link #load()}).
 	 * 
 	 * @see ScoreEntry#read(String)
 	 * @see #addScoreEntry(ScoreEntry)
@@ -120,8 +129,18 @@ public class Resources implements GameConstants {
 
 	private void loadScoreEntries() {
 		scoreEntries = new ArrayList<>();
-
-		// TODO
+		// Try to read highscores
+		try (BufferedReader br = new BufferedReader(new FileReader(HIGHSCORE_FILE))) {
+			try {
+				// Read all lines, convert to ScoreEntries, sort by score, return them in a List
+				scoreEntries = br.lines().map(string -> ScoreEntry.read(string)).sorted(Comparator.reverseOrder())
+						.collect(Collectors.toList());
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -134,7 +153,9 @@ public class Resources implements GameConstants {
 	 */
 
 	public void addScoreEntry(ScoreEntry scoreEntry) {
-		// TODO
+		scoreEntries.add(scoreEntry);
+		// Sort the List by score
+		scoreEntries.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
 	}
 
 	public void clearEntries() throws IOException {
