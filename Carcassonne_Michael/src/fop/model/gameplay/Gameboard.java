@@ -37,8 +37,7 @@ public class Gameboard extends Observable<Gameboard> {
 	private List<Tile> tiles;
 	private FeatureGraph graph;
 	private Tile newestTile;
-	
-	
+		
 	public Gameboard() {
 		board = new Tile[144][144];
 		tiles = new LinkedList<Tile>();
@@ -89,15 +88,12 @@ public class Gameboard extends Observable<Gameboard> {
 		graph.addAllEdges(board[x][y].getEdges());
 
 		Tile t = board[x][y];
-
-		// Check top tile
-		Tile Toptile = null;
-		for ( int i = 0; i<tiles.size(); i++) {
-			if ((tiles.get(i).x == x) && (tiles.get(i).y == y-1)) {
-				Toptile = tiles.get(i);
 		
-			}
-		}
+		//Check Toptile
+		Tile Toptile =null;
+		if(y!=0)
+		   Toptile = board[x][y-1];
+		
 			
 		if ( Toptile != null ) {
 			graph.addEdge(Toptile.getNode(BOTTOM), board[x][y].getNode(TOP));
@@ -107,24 +103,11 @@ public class Gameboard extends Observable<Gameboard> {
 			}
 		}
 			
-				
-		
-			// This might be helpful:
-			// As we already ensured that the tile on top exists and fits the tile at x, y,
-			// we know that if the feature of its top is a ROAD, the feature at the bottom
-			// of the tile on top is a ROAD aswell. As every ROAD has FIELD nodes as
-			// neighbours on both sides, we can connect those nodes of the two tiles. The
-			// same logic applies to the next three routines.
-
-
-		// Check left tile
+		//Check Lefttile
 		Tile Lefttile = null;
-		for ( int i = 0; i<tiles.size(); i++) {
-			if ((tiles.get(i).x == x-1) && (tiles.get(i).y == y)) {
-				Lefttile = tiles.get(i);
+		if(x!=0)
+			   Lefttile = board[x-1][y];
 		
-			}
-		}
 			
 		if ( Lefttile != null ) {
 			graph.addEdge(Lefttile.getNode(RIGHT), board[x][y].getNode(LEFT));
@@ -136,12 +119,9 @@ public class Gameboard extends Observable<Gameboard> {
 
 		// Check right tile
 		Tile Righttile = null;
-		for ( int i = 0; i<tiles.size(); i++) {
-			if ((tiles.get(i).x == x+1) && (tiles.get(i).y == y)) {
-				Righttile = tiles.get(i);
+		if(x!=144)
+			   Righttile = board[x+1][y];
 		
-			}
-		}
 			
 		if ( Righttile != null ) {
 			graph.addEdge(Righttile.getNode(LEFT), board[x][y].getNode(RIGHT));
@@ -153,12 +133,9 @@ public class Gameboard extends Observable<Gameboard> {
 
 		// Check bottom tile
 		Tile Bottomtile = null;
-		for ( int i = 0; i<tiles.size(); i++) {
-			if ((tiles.get(i).x == x) && (tiles.get(i).y == y+1)) {
-				Bottomtile = tiles.get(i);
-			
-			}
-		}
+		if(y!=144)
+			   Bottomtile = board[x][y+1];
+		
 				
 		if ( Bottomtile != null ) {
 			graph.addEdge(Bottomtile.getNode(TOP), board[x][y].getNode(BOTTOM));
@@ -169,112 +146,6 @@ public class Gameboard extends Observable<Gameboard> {
 		}
 	}
 	
-	
-	
-	
-	private FeatureGraph connectNodesforAI(Tile t, int x, int y) {
-		
-		FeatureGraph graphAI = new FeatureGraph();
-		graphAI.addAllNodes(board[x][y].getNodes());
-		graphAI.addAllEdges(board[x][y].getEdges());
-
-		
-
-		// Check top tile
-		Tile Toptile = null;
-		for ( int i = 0; i<tiles.size(); i++) {
-			if ((tiles.get(i).x == x) && (tiles.get(i).y == y-1)) {
-				Toptile = tiles.get(i);
-		
-			}
-		}
-			
-		if ( Toptile != null ) {
-			graph.addEdge(Toptile.getNode(BOTTOM), board[x][y].getNode(TOP));
-			if(t.getNode(TOP).getValue().equals(ROAD)) {
-				graphAI.addEdge(Toptile.getNode(BOTTOMLEFT), t.getNode(TOPLEFT));
-				graphAI.addEdge(Toptile.getNode(BOTTOMRIGHT), t.getNode(TOPRIGHT));
-			}
-		}
-			
-				
-		
-			// This might be helpful:
-			// As we already ensured that the tile on top exists and fits the tile at x, y,
-			// we know that if the feature of its top is a ROAD, the feature at the bottom
-			// of the tile on top is a ROAD aswell. As every ROAD has FIELD nodes as
-			// neighbours on both sides, we can connect those nodes of the two tiles. The
-			// same logic applies to the next three routines.
-
-
-		// Check left tile
-		Tile Lefttile = null;
-		for ( int i = 0; i<tiles.size(); i++) {
-			if ((tiles.get(i).x == x-1) && (tiles.get(i).y == y)) {
-				Lefttile = tiles.get(i);
-		
-			}
-		}
-			
-		if ( Lefttile != null ) {
-			graphAI.addEdge(Lefttile.getNode(RIGHT), t.getNode(LEFT));
-			if(t.getNode(LEFT).getValue().equals(ROAD)) {
-				graphAI.addEdge(Lefttile.getNode(BOTTOMRIGHT), t.getNode(BOTTOMLEFT));
-				graphAI.addEdge(Lefttile.getNode(TOPRIGHT), t.getNode(TOPLEFT));
-			}
-		}
-
-		// Check right tile
-		Tile Righttile = null;
-		for ( int i = 0; i<tiles.size(); i++) {
-			if ((tiles.get(i).x == x+1) && (tiles.get(i).y == y)) {
-				Righttile = tiles.get(i);
-		
-			}
-		}
-			
-		if ( Righttile != null ) {
-			graphAI.addEdge(Righttile.getNode(LEFT), t.getNode(RIGHT));
-			if(t.getNode(RIGHT).getValue().equals(ROAD)) {
-				graphAI.addEdge(Righttile.getNode(BOTTOMLEFT), t.getNode(BOTTOMRIGHT));
-				graphAI.addEdge(Righttile.getNode(TOPLEFT), t.getNode(TOPRIGHT));
-			}
-		}
-
-		// Check bottom tile
-		Tile Bottomtile = null;
-		for ( int i = 0; i<tiles.size(); i++) {
-			if ((tiles.get(i).x == x) && (tiles.get(i).y == y+1)) {
-				Bottomtile = tiles.get(i);
-			
-			}
-		}
-				
-		if ( Bottomtile != null ) {
-			graphAI.addEdge(Bottomtile.getNode(TOP), t.getNode(BOTTOM));
-			if(t.getNode(BOTTOM).getValue().equals(ROAD)) {
-				graphAI.addEdge(Bottomtile.getNode(TOPRIGHT), t.getNode(BOTTOMRIGHT));
-				graphAI.addEdge(Bottomtile.getNode(TOPLEFT), t.getNode(BOTTOMLEFT));
-			}
-		}
-		
-		return graphAI;
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
 	/**
 	 * Checks if the given tile could be placed at position x, y on the board
 	 * according to the rules.
@@ -289,19 +160,10 @@ public class Gameboard extends Observable<Gameboard> {
 		
 		if(board[x][y]!=null) return false;
 		
-		
-		
-		
-		
-		
 		// Check top tile
-		Tile Toptile = null;
-		for ( int i = 0; i<tiles.size(); i++) {
-			if ((tiles.get(i).x == x) && (tiles.get(i).y == y-1)) {
-				Toptile = tiles.get(i);
-		
-			}
-		}
+		Tile Toptile =null;
+		if(y!=0)
+		   Toptile = board[x][y-1];
 			
 		if ( Toptile != null ) {
 				
@@ -311,18 +173,12 @@ public class Gameboard extends Observable<Gameboard> {
 			
 		}
 		else top=1;
-			
 		
-		
-			
-
 		// Check left tile
 		Tile Lefttile = null;
-		for ( int i = 0; i<tiles.size(); i++) {
-			if ((tiles.get(i).x == x-1) && (tiles.get(i).y == y)) {
-				Lefttile = tiles.get(i);
-			}
-		}
+		if(x!=0)
+			   Lefttile = board[x-1][y];
+		
 		if ( Lefttile != null ) {
 			
 					if(Lefttile.getNodeAtPosition(Position.RIGHT).getValue().equals( t.getNodeAtPosition(Position.LEFT).getValue() )) {
@@ -332,15 +188,11 @@ public class Gameboard extends Observable<Gameboard> {
 		}
 		else left=1;
 		
-		
-
 		// Check right tile
 		Tile Righttile = null;
-		for ( int i = 0; i<tiles.size(); i++) {
-			if ((tiles.get(i).x == x+1) && (tiles.get(i).y == y)) {
-				Righttile = tiles.get(i);
-			}
-		}
+		if(x!=144)
+			   Righttile = board[x+1][y];
+		
 		if ( Righttile != null ) {
 			
 				if(Righttile.getNodeAtPosition(Position.LEFT).getValue()
@@ -348,27 +200,19 @@ public class Gameboard extends Observable<Gameboard> {
 					right =1;
 					
 				}
-	
 		}	
 		else right = 1;
-			
-			
 		
-
 		// Check bottom tile
 		Tile Bottomtile = null;
-		for ( int i = 0; i<tiles.size(); i++) {
-			if ((tiles.get(i).x == x) && (tiles.get(i).y == y+1)) {
-				Bottomtile = tiles.get(i);
-			}
-		}
+		if(y!=144)
+			   Bottomtile = board[x][y+1];
+		
 		if ( Bottomtile != null ) {
 		
 				if(Bottomtile.getNodeAtPosition(Position.TOP).getValue().equals( t.getNodeAtPosition(Position.BOTTOM).getValue() ) ){
 					down =1;
-					
 				}
-	
 		}		
 		else down=1;
 			
@@ -379,10 +223,10 @@ public class Gameboard extends Observable<Gameboard> {
 		
 		
 		else return false;
-		
+	}	
 		
 	
-}
+
 
 	
 	
@@ -409,7 +253,6 @@ public class Gameboard extends Observable<Gameboard> {
 		}	
 		u=u+1;
 	}
-			
 	
 		return test;
 	}
@@ -489,6 +332,7 @@ public class Gameboard extends Observable<Gameboard> {
 					else {
 						if(state == State.GAME_OVER) {
 							tiles.get(i).getMeeple().addScore(score);
+							tiles.get(i).getMeeple().returnMeeple();
 							tiles.get(i).getNode(Position.CENTER).removeMeeple();
 						}
 					}
@@ -498,114 +342,9 @@ public class Gameboard extends Observable<Gameboard> {
 		}
 				
 		score =0;
-							
-			
 		
-		//the methods getNode() and getType of class Tile and FeatureNode might be helpful
-		
-		//Check all surrounding tiles and add the points
-				
-		//Points are given if the landscape is complete or the game is over
-		//Meeples are just returned in case of state == State.GAME_OVER
-				
-		//After adding the points to the overall points of the player, set the score to 1 again
 	}
 	
-	
-public int calculateMonasteriesForAI(Tile t) {
-		List<Tile> tilesAI = new ArrayList<Tile>();
-		tilesAI.addAll(tiles);
-		tilesAI.add(t);
-		int res =0;
-		int score =0;
-		int x,y;
-		for ( int i = 0; i<tiles.size(); i++) {
-			
-			if( (tiles.get(i).getType()==TileType.A)|| (tiles.get(i).getType()==TileType.B)) {
-					
-					
-				if(tiles.get(i).getNodeAtPosition(Position.CENTER).hasMeeple() == true) {
-					
-				
-					score=1; x=tiles.get(i).x; y=tiles.get(i).y;
-					
-					if(x>0 && y>0) {
-						if(board[x-1][y-1]!=null){
-							score = score +1;
-						}
-					}
-					
-					if(y>0) {
-						if(board[x][y-1]!=null){
-							score = score +1;
-						}
-					}
-					
-					if(x<144 && y>0) {
-						if(board[x+1][y-1]!=null){
-							score = score +1;
-						}
-					}
-					
-					if(x<144) {
-						if(board[x+1][y]!=null){
-							score = score +1;
-						}
-					}
-					
-					if(x<144 && y<144) {
-						if(board[x+1][y+1]!=null){
-							score = score +1;
-						}
-					}
-					
-					if(y<144) {
-						if(board[x][y+1]!=null){
-							score = score +1;
-						}
-					}
-					
-					if(x>0 && y<144) {
-						if(board[x-1][y+1]!=null){
-							score = score +1;
-						}
-					}
-					
-					if(x>0) {
-						if(board[x-1][y]!=null){
-							score = score +1;
-						}
-					}
-					
-					if(score==9) 
-						
-							if(tiles.get(i).getMeeple().getName().equals("AI"))
-								res = res + score;
-							else res = res-score;
-								
-						
-						
-					}
-					
-						
-				}
-			}
-		
-				
-		score =0;
-							
-		return res;
-		
-		//the methods getNode() and getType of class Tile and FeatureNode might be helpful
-		
-		//Check all surrounding tiles and add the points
-				
-		//Points are given if the landscape is complete or the game is over
-		//Meeples are just returned in case of state == State.GAME_OVER
-				
-		//After adding the points to the overall points of the player, set the score to 1 again
-	}
-
 	/**
 	 * Calculates points and adds them to the players score, if a feature was
 	 * completed. FIELDS are only calculated when the game is over.
@@ -613,10 +352,8 @@ public int calculateMonasteriesForAI(Tile t) {
 	 * @param state The current game state.
 	 */
 	public void calculatePoints(State state) {
-		// Fields are only calculated on final scoring.
-		//if (state == State.GAME_OVER)
-			calculatePoints(FIELDS, state);
-
+		
+		calculatePoints(FIELDS, state);
 		calculatePoints(CASTLE, state);
 		calculatePoints(ROAD, state);
 		calculateMonasteries(state);
@@ -630,12 +367,28 @@ public int calculateMonasteriesForAI(Tile t) {
 	 * @param type  The FeatureType that is supposed to be calculated.
 	 * @param state The current game state.
 	 */
-	
-	
-	
-	
-	
-	
+		
+	public List<Node<FeatureType>> getSubgraph(FeatureNode n) {
+		
+		List<Node<FeatureType>> visitedNodes = new ArrayList<>();
+		ArrayDeque<Node<FeatureType>> queue = new ArrayDeque<>();
+
+		queue.push(n);
+		while (!queue.isEmpty()) {
+			FeatureNode node = (FeatureNode) queue.pop();
+		
+
+			List<Edge<FeatureType>> edges = graph.getEdges(node);
+			for (Edge<FeatureType> edge : edges) {
+				Node<FeatureType> nextNode = edge.getOtherNode(node);
+				if (!visitedNodes.contains(nextNode)) {
+					queue.push(nextNode);
+					visitedNodes.add(nextNode);
+				}
+			}
+		}
+		return visitedNodes;
+	}
 	
 	
 	public void calculatePoints(FeatureType type, State state) {
@@ -658,6 +411,7 @@ public int calculateMonasteriesForAI(Tile t) {
 						queue.push(nextNode);
 						visitedNodes.add(nextNode);
 					}
+					
 					nodeList.remove(nextNode);
 				}
 			}
@@ -670,96 +424,110 @@ public int calculateMonasteriesForAI(Tile t) {
 		}
 		
 	}
-		
-
 	
 	
 	public boolean isCompleted(ArrayDeque<Node<FeatureType>> queue) {
 		
+		
+		if(queue==null)
+			return false;
+		else
+			if(queue.size()==0)
+				return false;
+		
 		ArrayList<Node<FeatureType>> nodes = new ArrayList<Node<FeatureType>>();
 		nodes.addAll(queue);
 		List<TileType> types = new ArrayList<TileType>();
-		boolean completed = true;
+		ArrayList<Tile> tiles = new ArrayList<Tile>();
 		
-		while(!nodes.isEmpty()) {
-			FeatureNode node = (FeatureNode) nodes.remove(0);
+		for(Node<FeatureType> n: nodes) {
+			Tile z= new Tile(null);
+			z= getTileContainingNode((FeatureNode) n);
+			if(! tiles.contains(z))
+				tiles.add(z);
+		}
 		
-			Tile tile = getTileContainingNode(node);
+		if(tiles.size() ==1)
+			return false;
+		
+		else {	
+			boolean completed = true;
+		
+			while(!nodes.isEmpty()) {
+				FeatureNode node = (FeatureNode) nodes.remove(0);
+		
+				Tile tile = getTileContainingNode(node);
 			
-			Position po = tile.getNodePosition(node);
+				Position po = tile.getNodePosition(node);
 	
 		
 		
-			int x = tile.x;
-			int y = tile.y;
+				int x = tile.x;
+				int y = tile.y;
 		
 		
 		
-			if(po == TOP) {
-				if(y==0) completed= false;
-				else {
-					if(board[x][y-1]==null) {
-						types.add(TileType.FLIPSIDE);
+				if(po == TOP) {
+					if(y==0) completed= false;
+					else {
+						if(board[x][y-1]==null) {
+							types.add(TileType.FLIPSIDE);
 						}
 					}
 					
-			}	
+				}	
 			
 	
-						
 			
-			
-			if(po == BOTTOM) {
-				if(y==144) completed= false;
-				else {
-					if(board[x][y+1]==null) {
+				if(po == BOTTOM) {
+					if(y==144) 
+						completed= false;
+					else {
+						if(board[x][y+1]==null) {
 						types.add(TileType.FLIPSIDE);
 						}
 					}
-					
-			}	
+				}	
 	
 			
 		
-			if(po == LEFT) {
-				if(x==0) completed= false;
+				if(po == LEFT) {
+					if(x==0) 
+						completed= false;
 				else {
 					if(board[x-1][y]==null) {
 						types.add(TileType.FLIPSIDE);
 					}
 				}
 					
-			}	
+				}	
 	
 			
 			
-			if(po == RIGHT) {
-				if(x==144) completed= false;
+				if(po == RIGHT) {
+					if(x==144)
+						completed= false;
 				else {
 					if(board[x+1][y]==null) {
 						types.add(TileType.FLIPSIDE);
 						}
 					}
 					
-			}	
+				}	
 			
-		}
+			}
 			
-			
-	
 
-		if(types.contains(TileType.FLIPSIDE)) {completed = false;}
+			if(types.contains(TileType.FLIPSIDE)) {completed = false;}
 	
-		return completed;
+			return completed;
+		}
 	
 	}
 	
-	
-	
-	
 			
 	public void teilgraphPunkte(ArrayDeque<Node<FeatureType>> queue, FeatureType type, State state) {
-			//Seperate methode Schreiben: teilgraphen auswerten.
+			
 		
 		ArrayList<Tile> visited = new ArrayList<Tile>();
 		int score = 0;
@@ -787,12 +555,12 @@ public int calculateMonasteriesForAI(Tile t) {
 					
 		if(type==ROAD) {
 				if(completed == true) {
-						setPointsOfPlayerX(newque, score, type);
+						setPointsOfPlayerX(newque, score, type, state);
 								
 				}
 							
 				if((completed == false)&&(state == State.GAME_OVER)) {
-						setPointsOfPlayerX(newque, score, type);
+						setPointsOfPlayerX(newque, score, type, state);
 				}
 								
 		}
@@ -817,19 +585,20 @@ public int calculateMonasteriesForAI(Tile t) {
 			
 				if(completed == true) {
 					score=score*2;
-					setPointsOfPlayerX(newque, score, type);
+					setPointsOfPlayerX(newque, score, type, state);
 				}
-				else {		
-				if((completed == false)&&(state == State.GAME_OVER)) {
-					setPointsOfPlayerX(newque, score, type);
-				}}
+				else 		
+					if((completed == false)&&(state == State.GAME_OVER)) {
+						setPointsOfPlayerX(newque, score, type, state);
+				}
 						
 		}
+		
 		if(type ==FeatureType.FIELDS) {
 			score = fieldsScore(newque);
-			if(state == State.GAME_OVER) {
-					setPointsOfPlayerX(newque, score, type);
-			}
+			if(state == State.GAME_OVER) 
+					setPointsOfPlayerX(newque, score, type, state);
+			
 			score=0;
 							
 		}
@@ -839,22 +608,6 @@ public int calculateMonasteriesForAI(Tile t) {
 	}
 		
 	
-	
-	
-		 // Is the feature completed? Is set to false if a node is visited that does not
-									// connect to any other tile
-
-		
-		// Iterate as long as the queue is not empty
-		// Remember: queue defines a connected graph
-		
-	
-		
-		// Hint:
-		// If there is one straight positioned node that does not connect to another
-		// tile, the feature cannot be completed.
-
-
 	
 	public int fieldsScore(ArrayDeque<Node<FeatureType>> que){
 		
@@ -928,18 +681,14 @@ public int calculateMonasteriesForAI(Tile t) {
 		}
 			
 		return score;	
-		
 	}
 	
 	
 	
-	
-	
-	public void setPointsOfPlayerX(ArrayDeque<Node<FeatureType>> queue, int score, FeatureType type) {
+	public void setPointsOfPlayerX(ArrayDeque<Node<FeatureType>> queue, int score, FeatureType type, State state) {
 		ArrayList<Player> Players = new ArrayList<Player>();
 		ArrayList<Player> Winners = new ArrayList<Player>();
-		
-		
+				
 		while(queue.size()>0) {
 			FeatureNode fnode = (FeatureNode) queue.getFirst();
 			if(fnode.hasMeeple()) { 
@@ -951,8 +700,7 @@ public int calculateMonasteriesForAI(Tile t) {
 		}
 		
 		ArrayList<Player> AllPlayers = new ArrayList<Player>();
-	
-		
+			
 		int meepleMax=0;
 		if(Players.size()>0) {
 			for(int j=0; j<Players.size(); j++) {
@@ -971,46 +719,34 @@ public int calculateMonasteriesForAI(Tile t) {
 			
 			}
 		}
-		
-		
+				
 		for(int h=0; h<Winners.size(); h++)	{
 			Winners.get(h).addScore(score); 
-			if(type == CASTLE) {
-				
+			if((type == CASTLE)&&(state!=State.GAME_OVER)) 
 				Winners.get(h).addCastle(1);
-				
-			}
-				
-			
-			
-			
+			if((type == ROAD)&&(state!=State.GAME_OVER)) 
+				if(Winners.get(h).getStreet()<score)
+					Winners.get(h).setStreet(score);
+		
 		}
 		
 	}
-	
-	
-	
-	
-	
-	
-	
-	
+			
+	/**
+	 * Returns how often one Player is in a list.
+	 * @param List of Player
+	 * @param Player
+	 * @return returns how often Player is in list
+	 */
 	public int anzahl(ArrayList<Player> lst, Player player) {
 		int anPlayer=0;
 		for(int i=0; i<lst.size(); i++) {
 			if(player.equals(lst.get(i))) anPlayer= anPlayer+1;
 		}
 			
-			return anPlayer;
+		return anPlayer;
 	}
-	
-	
-	
-	
-	
-	
-	
-
+		
 	/**
 	 * Returns all Tiles on the Gameboard.
 	 * 
@@ -1026,14 +762,14 @@ public int calculateMonasteriesForAI(Tile t) {
 	 * @param node A FeatureNode.
 	 * @return the Tile containing the given FeatureNode.
 	 */
-	private Tile getTileContainingNode(FeatureNode node) {
+	public Tile getTileContainingNode(FeatureNode node) {
 		for (Tile t : tiles) {
 			if (t.containsNode(node))
 				return t;
 		}
 		return null;
 	}
-
+	
 	/**
 	 * Returns the spots on the most recently placed tile on which it is allowed to
 	 * place a meeple .
@@ -1107,7 +843,9 @@ public int calculateMonasteriesForAI(Tile t) {
 	 * @param player   The owner of the meeple.
 	 */
 	public void placeMeeple(Position position, Player player) {
-		board[newestTile.x][newestTile.y].getNode(position).setPlayer(player);
+		board[newestTile.x][newestTile.y]
+				.getNode(position)
+					.setPlayer(player);
 		player.removeMeeple();
 	}
 
@@ -1118,6 +856,7 @@ public int calculateMonasteriesForAI(Tile t) {
 	public FeatureGraph getGraph() {
 		return this.graph;
 	}
+	
 	public void setFeatureGraph(FeatureGraph graph) {
 		this.graph = graph; 
 	}

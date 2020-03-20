@@ -20,8 +20,10 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 
 	private GameController gc;
 
-	
+	//Marker, ob Mission 1 und 2 aktiv sind oder nicht
 	public boolean mission1=true;
+	public boolean mission2=true;
+	
 	
 	public GamePlay(GameController gc) {
 
@@ -63,23 +65,62 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 		
 		ArrayList<Player> pl = new ArrayList<Player>();
 		pl.addAll(gc.getPlayers());
-		
+		int max=0;
+		boolean t=false;
 		Player Burgherr=null;
 		for(Player p: pl) {
-			if(p.getCastle()>=3) {
-				boolean t = true;
 			
-				int max=p.getCastle();
-				ArrayList<Player> pl2 = new ArrayList<Player>();
-				pl2.addAll(gc.getPlayers());
-				pl2.remove(p);
-				for(Player b: pl2) 
-					if(max-b.getCastle() <3)
-						t = false;
-				if(t) Burgherr = p;
+			
+			if( max<p.getCastle())
+				max = p.getCastle();
 		}
+		if(max>=3) t = true;
+		
+		Player master = null;
+		
+		ArrayList<Player> pl2 = new ArrayList<Player>();
+		
+		for(Player b: pl) {
+			if((b.getCastle()==max)) 
+				master = b;
+			else
+			    pl2.add(b);
+			
 		}
-		return Burgherr;
+		
+		for(Player p: pl2) 
+			if(max-p.getCastle() <3)
+					t = false;
+		
+		if(t) 
+		
+		
+			return master;
+		else
+			return null;
+	}
+	
+	
+	
+	
+	public ArrayList<Player> mission2() {
+		
+		ArrayList<Player> pl = new ArrayList<Player>();
+		pl.addAll(gc.getPlayers());
+		ArrayList<Player> pl2 = new ArrayList<Player>();
+		Player Strasse=null;
+		for(Player p: pl) 
+			
+			
+			if( p.getStreet()>11)
+				pl2.add(p);
+		
+		
+		
+		if(pl2.size()>0)
+			return pl2;
+		else
+			return null;
 	}
 	
 	
@@ -87,9 +128,11 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 	
 	@Override
 	public void nextRound() {
-		//System.out.println(this.getGameController().getTileStack().cardstack.size());
+		
 		if(mission1==false)
 				gc.getGameView().getToolbarPanel().showMission1Button(false); 
+		if(mission2==false)
+			gc.getGameView().getToolbarPanel().showMission2Button(false); 
 		
 		ArrayList<Player> pl = new ArrayList<Player>();
 		pl.addAll(gc.getPlayers());
@@ -97,24 +140,28 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 		if(!currentPlayer().getName().equals("AI"))
 			gc.getGameBoardPanel().removeTempMeepleOverlay();
 		
-	
-		
-		
-		if (gc.getTileStack().remainingTiles() == 0)
+		//Hinzugefügt: Siegesbedingungen für Missionen werden geprüft, wenn diese angeschaltet sind
+		gc.getGameBoard().calculatePoints(gc.getState());
+		Player m1 =mission1();
+		if (	(gc.getTileStack().remainingTiles() == 0)||
+				((mission1()!=null)&&mission1==true)||
+				((mission2()!=null))&&(mission2==true))
 			gc.setState(State.GAME_OVER);
+		
+		
 		else {
-			gc.getGameBoard().calculatePoints(gc.getState());
+			
 			
 			gc.getGameBoard().push(gc.getGameBoard());
 			
 			
-			
-			
-			if((mission1() != null)&&(mission1==true)) 
-				gc.setState(State.GAME_OVER);
-					
 			gc.incrementRound();
 			gc.setState(State.PLACING_TILE);
+			
+			
+					
+		
+			
 			
 		}
 	}
@@ -142,6 +189,8 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 			case "Skip":
 				nextRound();
 				break;
+				
+			//Button zum zu- und abschalten von Mission2
 			case "3 Burgen Vorsprung gewinnt":
 				if(gc.getGameBoard().getTiles().size()==1)
 					gc.getGameView().getToolbarPanel().activateMission1Button();
@@ -149,7 +198,17 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 					mission1=false;
 				else
 					mission1=true;
-				
+					break;
+					
+			//Button zum zu- und abschalten von Mission2
+			case "Strasse der Länge 12 gewinnt":
+				if(gc.getGameBoard().getTiles().size()==1)
+					gc.getGameView().getToolbarPanel().activateMission2Button();
+				if(mission2==true)
+					mission2=false;
+				else
+					mission2=true;
+					break;
 				
 			}
 		});
@@ -235,7 +294,6 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 		push(gc.getPlayers());
 		gc.getGameView().getToolbarPanel().showSkipButton(false);
 		gc.getGameView().setStatusbarPanel(MessagesConstants.getWinnersMessage(getWinners(gc.getPlayers())), WINNING_MESSAGE_COLOR);
-
 		MessagesConstants.showWinner(getWinners(gc.getPlayers()));
 		GameMethods.GoToMainMenu();
 	}
@@ -244,17 +302,8 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 	@Override
 	public	List<Player> getWinners(List<Player>players) {
 		
-		
-		
-		
-		
-		
-		
 		List<Player> winners = new LinkedList<Player>();
 		int highestScore = 0;
-		
-		
-		
 		
 		for (Player p : players)
 			
@@ -266,10 +315,18 @@ public class GamePlay extends Observable<List<Player>> implements GamePlayMethod
 			} else if (p.getScore() == highestScore) {
 				winners.add(p);
 			}
-	
-		if(mission1() != null) {
+		
+		//Damit Missionen 1 und 2 Beachtung finden:
+		Player m1 = mission1(); 
+		ArrayList<Player> m2 = mission2();
+		if((m1 != null)||(m2!=null)) {
 			winners = new LinkedList<Player>();
-			winners.add(mission1());
+			if(m1!=null)
+				winners.add(m1);
+			if(m2!=null)
+				winners.addAll(m2);
+			
+			
 		}
 		
 		

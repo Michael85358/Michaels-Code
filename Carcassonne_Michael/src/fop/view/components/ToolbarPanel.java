@@ -21,7 +21,7 @@ import fop.model.player.Player;
  */
 public class ToolbarPanel extends JPanel implements Observer<List<Player>> {
 	JButton mission1Button;
-	
+	JButton mission2Button;
 	
 	JButton menuButton;
 	JButton skipButton;
@@ -52,6 +52,14 @@ public class ToolbarPanel extends JPanel implements Observer<List<Player>> {
 		mission1Button.setBackground(Color.RED);
 		add(mission1Button);
 		
+		
+		mission2Button = new JButton("Strasse der Länge 12 gewinnt");
+		mission2Button.setForeground(Color.RED);
+		
+		mission2Button.setBackground(Color.RED);
+		add(mission2Button);
+		
+		
 		menuButton = new JButton("Main menu");
 		add(menuButton);
 
@@ -68,6 +76,7 @@ public class ToolbarPanel extends JPanel implements Observer<List<Player>> {
 		menuButton.addActionListener(l);
 		skipButton.addActionListener(l);
 		mission1Button.addActionListener(l);
+		mission2Button.addActionListener(l);
 	}
 
 	/**
@@ -88,6 +97,12 @@ public class ToolbarPanel extends JPanel implements Observer<List<Player>> {
 		mission1Button.setVisible(visible);
 	}
 	
+	
+	public void showMission2Button(boolean visible) {
+		mission2Button.setVisible(visible);
+	}
+	
+	
 	public void activateMission1Button() {
 		if(mission1Button.getBackground()!=Color.RED) {
 			mission1Button.setBackground(Color.RED);
@@ -96,6 +111,17 @@ public class ToolbarPanel extends JPanel implements Observer<List<Player>> {
 		else {
 			mission1Button.setBackground(Color.GRAY);
 			mission1Button.setForeground(Color.BLACK);
+		}
+	}
+	
+	public void activateMission2Button() {
+		if(mission2Button.getBackground()!=Color.RED) {
+			mission2Button.setBackground(Color.RED);
+			mission2Button.setForeground(Color.RED);
+		}
+		else {
+			mission2Button.setBackground(Color.GRAY);
+			mission2Button.setForeground(Color.BLACK);
 		}
 	}
 

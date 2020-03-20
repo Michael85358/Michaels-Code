@@ -53,6 +53,10 @@ public interface PlayerMethods {
 	
 
 	public void addCastle(int c);
+
+	void setStreet(int c);
+
+	int getStreet();
 	
 	
 		
